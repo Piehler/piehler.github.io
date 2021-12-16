@@ -1,0 +1,374 @@
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>Minimieren von DEAs</title>
+
+  <link rel="stylesheet" href="styles/style.css" />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Noto Sans'>
+  <!-- <link rel="stylesheet" href="styles/bootstrap-combined.min.css" /> -->
+  <script src="scripts/jquery.min.js"></script>
+  <script src="scripts/bootstrap.min.js"></script>
+  <script src="scripts/viz.js"></script>
+  <script src="scripts/noam.js"></script>
+  <!-- <script src="scripts/fsm_simulator.js"></script> -->
+  <script src="scripts/fsm_designer.js"></script>
+  <script src="scripts/script.js"></script>
+</head>
+
+<body align="center">
+
+  <!-- <script>
+test = true;
+  console.log(true*false);
+</script> -->
+
+  <h1>
+    Minimieren deterministischer endlicher Automaten
+  </h1>
+  <div style="display: inline-table; margin: 0;">
+    <div id="NextBspO" style="display: inline-table; visibility: hidden;">
+      <button class="btn" style="background-color:brown;" onClick="nextBspO()">
+        Nächste Aufgabe
+      </button>
+    </div>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <div style="display: inline-table;">
+      <button id="AutomatSelberGestalten" class="btn">
+        Automat selber gestalten
+      </button>
+    </div>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <div style="display: inline-table;">
+      <button id="Anleitung" class="btn">
+        Anleitung
+      </button>
+    </div>
+  </div>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <div style="display: inline-table; margin: 0;">
+    <ul style="list-style-type: none; display: inline-table;">
+      <li>
+        <div><input type="checkbox" id="hilfeStates" class="hilfe" onchange="changeHilfeStates()"></div>
+        <div><label for="hilfeStates">&nbsp;&nbsp;Hilfe Zustände</label></div>
+      </li>
+      <li>
+        <div><input type="checkbox" id="hilfeTrans" class="hilfe" onchange="changeHilfeTrans()"></div>
+        <div><label for="hilfeTrans">&nbsp;&nbsp;Hilfe Übergänge</label></div>
+      </li>
+    </ul>
+  </div>
+
+  <script>
+    function changeHilfeStates() { if (hilfeStates) { hilfeStates = false; } else { hilfeStates = true; } }
+    function changeHilfeTrans() { if (hilfeTrans) { hilfeTrans = false; } else { hilfeTrans = true; } }
+  </script>
+
+  <!-- <script>
+    const alertHTML = '<div class="alert">ALERT!!!</div>';
+    document.body.insertAdjacentHTML('beforeend', alertHTML);
+    setTimeout(() => document.querySelector('.alert').classList.add('hide'), 1000);
+  </script> -->
+
+  <!-- <script>
+    const alertHTML = '<div class="alert">ALERT!!!</div>';
+    document.body.insertAdjacentHTML('beforeend', alertHTML);
+    setTimeout(() => document.querySelector('.alert').classList.add('hide'), 1000);
+  </script> -->
+
+  <br>
+
+  <div class="ZweiSpalten">
+    <h2 align="center">Zu minimierender Automat</h2>
+    <p id="Graph" align="center"></p>
+    <br>
+    <!-- <button class="btn" onClick="GraphMinim()">
+      Minimierter Graph
+    </button> -->
+    <h2 id="MinGraphTitelO"></h2>
+    <p id="MinGraphO" align="center"></p>
+  </div>
+
+  <div class="ZweiSpalten">
+    <p align="center">Fülle die Zustandspaartabelle mit Wörtern, welche<br>die Nichtäquivalenz von Zustandpaaren
+      bezeugen.</p>
+    <div id="KnoepfeO"></div>
+    <div id="TabelleO"></div>
+    <div id="checkO">
+      <button class="btn" onClick="uberprufen('O')">
+        Überprüfen
+      </button>
+    </div>
+    <div id="checkS" style="display: none">
+      <button class="btn" onClick="uberprufen('S')">
+        Überprüfen
+      </button>
+    </div>
+    <!-- <div id="checkS" style="display:none;">
+      <button class="btn" onClick="uberprufen('S')">
+        ÜberprüfenS
+      </button>
+    </div> -->
+
+    <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <button class="btn" onClick="array2html()">
+      Lösung <em>(kommt noch weg)</em>
+    </button> -->
+    <div id="Losungstabelle"></div>
+  </div>
+
+  <div id="myModal" class="modal">
+    <!-- The Modal -->
+    <div class="modal-content">
+      <!-- Modal content -->
+      <span id="IdClose" class="close">&times;</span>
+      <h2>Endlichen Automaten selber gestalten</h2>
+      <canvas id="canvas" width="800" height="600">
+        <!-- <span class="error">Keine Unterstützung des html5-Canvas-Elements</span> -->
+      </canvas>
+      <div>
+        <p class="center">
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <button class="btn" onClick="GraphUebernehmen()">
+            Graph übernehmen
+          </button>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <button class="btn" onclick="javascript:clearCanvas()">
+            Alles löschen
+          </button>
+        </p>
+        <ul>
+          <li><b>Zustand hinzufügen:</b> Doppelklick<br>
+            <ul>
+              <li><em>Erlaubte Zeichen:</em> Einzelne Buchstaben des kleinen Alphabets</li>
+            </ul>
+          </li>
+          <li><b>Akzeptierender Zustand:</b> Doppelklick auf einen existierenden Zustand</li>
+          <li><b>Pfeil hinzufügen:</b> Umschalt + ziehen<br>
+            <ul>
+              <li><em>Erlaubte Zeichen:</em> Natürliche Zahlen inkl. 0</li>
+            </ul>
+          <li><b>Verschieben: </b>ziehen</li>
+          <li><b>Löschen:</b> Delete-Taste (nicht Backspace-Taste)</li>
+          <!-- </ul>
+        <ul> -->
+          <!-- <li><b>Radius:</b> &nbsp;&nbsp;&nbsp; <input type="range" id="rangeSlider" min="20" max="80" value="30"
+              oninput="javascript:radiusChanged();" onchange="javascript:radiusChanged();" /> -->
+          <!-- <li><b>If you just want to add more text:</b> <button onclick="javascript:makeNodeTextOnly()">Toggle drawing the
+              selected node's circles</button> -->
+
+          <!-- <li><b>Indizes:</b> bspw. «q_1» für q₁</li> -->
+          <!-- <li><b>Type greek letter:</b> put a backslash before it (like "\beta")</li> -->
+          <!-- <li><b>Additional symbols:</b> Type "\emptyset" for &#8709;, "\rightarrow" for &#8594;, and "\leftarrow" for
+            &#8592;.</li> -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- <iframe src="Anleitung/index1.pdf" width="100%"></iframe> -->
+
+  <!-- <embed src="Anleitung/index1.pdf" type="application/pdf" width="100%" height="100%"/> -->
+
+  <div id="ModalAnleitung" class="modal">
+    <!-- The Modal -->
+    <div class="modal-contentA">
+      <!-- Modal content -->
+      <span id="IdCloseAnleitung" class="close">&times;</span>
+      <!-- <h2>Anleitung</h2> -->
+      <div class="w3-content" style="max-width:95%">
+        <img class="mySlides" src="Anleitung/index1.pdf" style="width:100%">
+        <!-- <img class="mySlides" src="Anleitung/Anleitung1.jpg" style="width:100%"> -->
+        <img class="mySlides" src="Anleitung/Anleitung2.png" style="width:100%">
+        <img class="mySlides" src="Anleitung/Anleitung3.png" style="width:100%">
+        <img class="mySlides" src="Anleitung/Anleitung4.png" style="width:100%">
+        <img class="mySlides" src="Anleitung/Anleitung5.png" style="width:100%">
+      </div>
+
+      <div class="w3-center">
+        <div class="w3-section" align="center">
+          <button class="w3-button w3-light-grey" onclick="plusDivs(-1)">&#10094;</button>
+          <button class="w3-button w3-light-grey" onclick="plusDivs(1)">&#10095;</button>
+        </div>
+        <button class="w3-button demo" onclick="currentDiv(1)">1</button>
+        <button class="w3-button demo" onclick="currentDiv(2)">2</button>
+        <button class="w3-button demo" onclick="currentDiv(3)">3</button>
+        <button class="w3-button demo" onclick="currentDiv(4)">4</button>
+        <button class="w3-button demo" onclick="currentDiv(5)">5</button>
+      </div>
+
+      <script>
+        var slideIndex = 1;
+        showDivs(slideIndex);
+        function plusDivs(n) {
+          showDivs(slideIndex += n);
+        }
+        function currentDiv(n) {
+          showDivs(slideIndex = n);
+        }
+        function showDivs(n) {
+          var i;
+          var x = document.getElementsByClassName("mySlides");
+          var dots = document.getElementsByClassName("demo");
+          if (n > x.length) { slideIndex = 1 }
+          if (n < 1) { slideIndex = x.length }
+          for (let i of x) {
+            i.style.display = "none";
+          }
+          // for (i = 0; i < dots.length; i++) {
+          //   dots[i].className = dots[i].className.replace(" w3-red", "");
+          // }
+          for (let i of dots) {
+            i.className = i.className.replace(" w3-red", "");
+          }
+          x[slideIndex - 1].style.display = "block";
+          dots[slideIndex - 1].className += " w3-red";
+        }
+      </script>
+      <!-- <div>
+        <p class="center">
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <button class="btn" onClick="GraphUebernehmen()">
+            Graph übernehmen
+          </button>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <button class="btn" onclick="javascript:clearCanvas()">
+            Alles löschen
+          </button>
+        </p>
+      </div> -->
+    </div>
+  </div>
+
+  <!-- <script>
+    document.getElementById("AutomatSelber").onclick = () => document.getElementById("myModal").style.display = "block";  // When the user clicks the button, open the modal
+    document.getElementById("IdClose").onclick = () => document.getElementById("myModal").style.display = "none";    // When the user clicks on <span> (x), close the modal
+
+  // var modal = document.getElementById("myModal");       // Get the modal
+  // var GH = document.getElementById("GraphHier");
+  // var myAuto = document.getElementById("AutomatSelber");         // Get the button that opens the modal
+  // var span = document.getElementById("IdClose");        // Get the <span> element that closes the modal
+  // var ubernehmen = document.getElementById("createAutomatonSelber");        // Get the <span> element that closes the modal
+
+  // ubernehmen.onclick = () => {
+
+    // modal.style.display = "none";                       // When the user clicks on <span> (x), close the modal
+    // GH.style.display = "none";
+  // }
+  // window.onclick = function (event) {              // When the user clicks anywhere outside of the modal, close it
+  //    if (event.target == modal) {
+  //       modal.style.display = "none";
+  //    }
+  // }
+
+  </script> -->
+
+  <script>
+    document.getElementById("AutomatSelberGestalten").onclick = () => document.getElementById("myModal").style.display = "block";  // When the user clicks the button, open the modal
+    document.getElementById("IdClose").onclick = () => document.getElementById("myModal").style.display = "none";    // When the user clicks on <span> (x), close the modal
+    document.getElementById("Anleitung").onclick = () => document.getElementById("ModalAnleitung").style.display = "block";  // When the user clicks the button, open the modal
+    document.getElementById("IdCloseAnleitung").onclick = () => document.getElementById("ModalAnleitung").style.display = "none";    // When the user clicks on <span> (x), close the modal
+
+    // document.addEventListener("DOMContentLoaded", () => {
+    //   document.querySelector("#TabelleHier").appendChild(makeTable());
+    //   // document.querySelector("#KnoepfeHier").appendChild(MakeRadioButtons());
+    //   // automaton = noam.fsm.parseFsmFromString(array2stringM(Eingabe[gRI]));
+    //   // document.querySelector("#GraphHier").appendChild(drawGraph());
+
+    //   // document.querySelector("#GraphHier").innerHTML = drawGraph();
+    // })
+
+    // ＿＿＿＿＿＿＿＿＿＿＿＿
+    // Ziel, dies so zu implementieren, damit die Grösse angepasst wird.
+    // ————————————————————
+    // console.log("test 1");
+    // automaton = noam.fsm.parseFsmFromString(array2stringM(Automat));
+    // document.getElementById("Graph").innerHTML = document.createElement('div').appendChild(drawGraph()).outerHTML;
+    // console.log("test 2");
+    // ￣￣￣￣￣￣￣￣￣￣￣￣
+
+    document.getElementById("Graph").innerHTML = Viz(noam.fsm.printDotFormat(noam.fsm.parseFsmFromString(array2stringM(AutomatO))), "svg");
+    // document.getElementById("Graph").innerHTML = "test";
+    // $("#Graph").html(vizASDF);
+    // reorderCirclesInAcceptingStates(automaton.acceptingStates);
+    $("#Graph svg").width($("#Graph").width());
+
+    makeGrafikZustandIdUndEdgeId('O');
+
+    document.getElementById("KnoepfeO").innerHTML = document.createElement('div').appendChild(MakeRadioButtons("O")).outerHTML;
+    document.getElementById("TabelleO").innerHTML = document.createElement('div').appendChild(makeTable("O")).outerHTML;
+
+  </script>
+
+  &nbsp;
+
+  <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+  <hr>
+
+  <!-- <h1>Äquivalenz von deterministischen endlichen Automaten</h1> -->
+  <h1>
+    Äquivalenz von DEAs&nbsp;&nbsp;&nbsp;&nbsp;
+    <div id="NextBspLR" style="display: inline-table; visibility: hidden;">
+      <button class="btn" style="background-color:brown;" onClick="nextBspLR()">
+        Nächste Aufgabe
+      </button>
+      <!-- <button class="btn" style="background-color:brown;" onClick="nextBspO()">
+        Nächste Aufgabe
+      </button> -->
+    </div>
+
+  </h1>
+
+  <div class="ZweiSpalten">
+    <h2 align="center">Automat 1</h2>
+    <p id="GraphL" align="center"></p>
+    <br>
+    <div id="KnoepfeL"></div>
+    <div id="TabelleL"></div>
+    <div id="checkL">
+      <button class="btn" onClick="uberprufen('L')">
+        Überprüfen
+      </button>
+    </div>
+    <h2 id="MinGraphTitelL"></h2>
+    <p id="MinGraphL" align="center"></p>
+  </div>
+  <!-- ----------------- -->
+  <div class="ZweiSpalten">
+    <h2 align="center">Automat 2</h2>
+    <p id="GraphR" align="center"></p>
+    <br>
+    <div id="KnoepfeR"></div>
+    <div id="TabelleR"></div>
+    <div id="checkR">
+      <button class="btn" onClick="uberprufen('R')">
+        Überprüfen
+      </button>
+    </div>
+    <h2 id="MinGraphTitelR"></h2>
+    <p id="MinGraphR" align="center"></p>
+  </div>
+
+  <script>
+    // statesL = AutomatL[0]; initialL = AutomatL[1]; acceptL = AutomatL[2]; alphabetL = AutomatL[3]; transL = AutomatL[4];
+    document.getElementById("GraphL").innerHTML = Viz(noam.fsm.printDotFormat(noam.fsm.parseFsmFromString(array2stringM(AutomatL))), "svg");
+    $("#GraphL svg").width($("#GraphL").width());
+    document.getElementById("KnoepfeL").innerHTML = document.createElement('div').appendChild(MakeRadioButtons("L")).outerHTML;
+    document.getElementById("TabelleL").innerHTML = document.createElement('div').appendChild(makeTable("L")).outerHTML;
+
+    // AutomatR = EingabeR[0];
+    // statesR = AutomatR[0]; initialR = AutomatR[1]; acceptR = AutomatR[2]; alphabetR = AutomatR[3]; transR = AutomatR[4];
+    document.getElementById("GraphR").innerHTML = Viz(noam.fsm.printDotFormat(noam.fsm.parseFsmFromString(array2stringM(AutomatR))), "svg");
+    $("#GraphR svg").width($("#GraphR").width());
+    document.getElementById("KnoepfeR").innerHTML = document.createElement('div').appendChild(MakeRadioButtons("R")).outerHTML;
+    document.getElementById("TabelleR").innerHTML = document.createElement('div').appendChild(makeTable("R")).outerHTML;
+
+  </script>
+
+  &nbsp;<br><br><br><br><br><br><br><br>&nbsp;
+
+</body>
+
+</html>
